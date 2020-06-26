@@ -222,7 +222,7 @@ class Solver {
         return stack;
     }
 
-    static void initCorrectRowsCols(int N) {
+    static void initGoalRowsCols(int N) {
         correctRow = new int[N * N];
         int z = 0;
         for (int i = 0; i < N; i++) {
@@ -240,7 +240,7 @@ class Solver {
     }
 
     public static void main(String[] args) throws Exception {
-        int dimension = 2;
+        int dimension = 4;
         JSONParser parser = new JSONParser();
         JSONArray jsonArray = new JSONArray();
 
@@ -256,37 +256,33 @@ class Solver {
             goalCells[i - 1] = i;
         }
         goalCells[nbrOfCells - 1] = 0;
-        initCorrectRowsCols(dimension);
-
+        initGoalRowsCols(dimension);
         AllPermutation perm = new AllPermutation(goalCells);
         perm.GetFirst();
-        while (perm.HasNext()) {
+        for(int i = 0;i<200;i++) {
             perm.GetNext();
         }
         System.out.println(perm.arrayLists);
-        int limit = perm.arrayLists.size() > 500 ? 500 : perm.arrayLists.size();
+        int limit = perm.arrayLists.size() > 100 ?100 : perm.arrayLists.size();
         for (int k = 0; k < limit; k++) {
             ArrayList<Integer> myList = perm.arrayLists.get(k);
             int[] intList = myList.stream().mapToInt(Integer::intValue).toArray();
-
             int[][] blocks = new int[dimension][dimension];
             for (int j = 0; j < dimension; j++)
                 for (int i = 0; i < dimension; i++)
                     blocks[j][i] = intList[j * dimension + i];
-
             Board initial = new Board(blocks);
-
             // solve the puzzle
             Solver solver = new Solver(initial);
 
             JSONObject obj = new JSONObject();
             // print solution to standard output
+            System.out.println(solver.isSolvable());
             if (solver.isSolvable()) {
                 obj.put("start", Arrays.toString(intList));
                 obj.put("goal", Arrays.toString(goalCells));
                 obj.put("moves", solver.moves());
                 jsonArray.add(obj);
-
             }
         }
         try (FileWriter f = new FileWriter(fileName)) {
